@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "revsbox"
+version = "0.0.0"
+description = "Build Qiskit circuits from LIGHTER-R and DORCIS S-box outputs."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{name = "Enes Buzluk"}]
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+dev = ["commitizen==4.19.0", "pre-commit==4.6.2", "ruff==0.16.9"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "pep621"
+tag_format = "v$version"
+update_changelog_on_bump = true
+major_version_zero = true
