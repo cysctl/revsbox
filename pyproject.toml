@@ -14,10 +14,11 @@ requires-python = ">=3.10"
 dependencies = []
 
 [dependency-groups]
+commit = ["commitizen==4.19.0"]
 test = ["pytest==9.1.1"]
 dev = [
+  { include-group = "commit" },
   { include-group = "test" },
-  "commitizen==4.19.0",
   "pre-commit==4.6.2",
   "ruff==0.16.9",
 ]
