@@ -29,22 +29,31 @@ def parse(text: str) -> ReversibleCircuit:
             continue
         if match := _INPUT.fullmatch(line):
             wire, bit = map(int, match.groups())
-            inputs[bit] = wire
+            _add_mapping(inputs, bit, wire, number)
         elif match := _OUTPUT.fullmatch(line):
             bit, wire = map(int, match.groups())
-            outputs[bit] = wire
+            _add_mapping(outputs, bit, wire, number)
         elif match := _GATE.fullmatch(line):
             operations.append(_parse_gate(match, number))
         else:
             raise ParseError(f"Line {number}: cannot parse {line!r}")
 
+    if not inputs:
+        raise ParseError("No input lines found (like 'F[0] = X[0];')")
+
     num_wires = len(inputs)
-    return ReversibleCircuit(
-        num_wires=num_wires,
-        input_map=tuple(inputs[bit] for bit in range(num_wires)),
-        output_map=tuple(outputs[bit] for bit in range(num_wires)),
-        operations=tuple(operations),
-    )
+    _check_bits("Input", inputs, num_wires)
+    _check_bits("Output", outputs, num_wires)
+
+    try:
+        return ReversibleCircuit(
+            num_wires=num_wires,
+            input_map=tuple(inputs[bit] for bit in range(num_wires)),
+            output_map=tuple(outputs[bit] for bit in range(num_wires)),
+            operations=tuple(operations),
+        )
+    except ValueError as error:
+        raise ParseError(str(error)) from error
 
 
 def _parse_gate(match: re.Match[str], number: int) -> Operation:
@@ -75,3 +84,19 @@ def _parse_gate(match: re.Match[str], number: int) -> Operation:
 
     controls = tuple(arg for arg in args if arg != target)
     return Operation(target, controls)
+
+
+def _add_mapping(mapping: dict[int, int], bit: int, wire: int, number: int) -> None:
+    """Store that X[bit] is on the given wire, and reject a repeated bit."""
+    if bit in mapping:
+        raise ParseError(f"Line {number}: X[{bit}] is mapped twice")
+    mapping[bit] = wire
+
+
+def _check_bits(kind: str, mapping: dict[int, int], num_wires: int) -> None:
+    """Raise ParseError unless the mapping covers X[0] to X[num_wires - 1]."""
+    if set(mapping) != set(range(num_wires)):
+        raise ParseError(
+            f"{kind} lines must map X[0] to X[{num_wires - 1}] exactly once, "
+            f"found bits {sorted(mapping)}"
+        )

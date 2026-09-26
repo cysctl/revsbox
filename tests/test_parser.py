@@ -74,3 +74,63 @@ def test_parse_rejects_bad_gate_lines(gate_line, message):
 
     with pytest.raises(ParseError, match=f"^Line 4: .*{message}"):
         parse(text)
+
+
+@pytest.mark.parametrize(
+    ("lines", "message"),
+    [
+        pytest.param([], "No input lines", id="no-input-lines"),
+        pytest.param(
+            ["F[0] = X[0];", "F[1] = X[0];", "X[0] = F[0];", "X[1] = F[1];"],
+            "^Line 2: .*mapped twice",
+            id="repeated-input-bit",
+        ),
+        pytest.param(
+            ["F[0] = X[0];", "F[1] = X[1];", "X[0] = F[0];", "X[0] = F[1];"],
+            "^Line 4: .*mapped twice",
+            id="repeated-output-bit",
+        ),
+        pytest.param(
+            ["F[0] = X[0];", "F[1] = X[2];", "X[0] = F[0];", "X[1] = F[1];"],
+            "Input lines must map",
+            id="missing-input-bit",
+        ),
+        pytest.param(
+            ["F[0] = X[0];", "F[1] = X[1];", "X[0] = F[0];"],
+            "Output lines must map",
+            id="missing-output-bit",
+        ),
+        pytest.param(
+            [
+                "F[0] = X[0];",
+                "F[1] = X[1];",
+                "X[0] = F[0];",
+                "X[1] = F[1];",
+                "X[2] = F[1];",
+            ],
+            "Output lines must map",
+            id="extra-output-bit",
+        ),
+        pytest.param(
+            ["F[0] = X[0];", "F[0] = X[1];", "X[0] = F[0];", "X[1] = F[1];"],
+            "input_map",
+            id="repeated-input-wire",
+        ),
+        pytest.param(
+            [
+                "F[0] = X[0];",
+                "F[1] = X[1];",
+                "F[5] = RNOT1(F[5]);",
+                "X[0] = F[0];",
+                "X[1] = F[1];",
+            ],
+            "uses wire 5",
+            id="gate-wire-out-of-range",
+        ),
+    ],
+)
+def test_parse_rejects_bad_wire_maps(lines, message):
+    text = "\n".join(lines) + "\n"
+
+    with pytest.raises(ParseError, match=message):
+        parse(text)
