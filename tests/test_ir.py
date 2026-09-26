@@ -23,3 +23,20 @@ def test_operation_is_immutable():
 
     with pytest.raises(dataclasses.FrozenInstanceError):
         op.target = 1
+
+
+@pytest.mark.parametrize("controls", [(1,), (0, 1)])
+def test_target_cannot_be_a_control(controls):
+    with pytest.raises(ValueError, match="target"):
+        Operation(target=1, controls=controls)
+
+
+def test_controls_must_be_unique():
+    with pytest.raises(ValueError, match="unique"):
+        Operation(target=0, controls=(2, 2))
+
+
+@pytest.mark.parametrize(("target", "controls"), [(-1, ()), (0, (-2,))])
+def test_wire_indexes_cannot_be_negative(target, controls):
+    with pytest.raises(ValueError, match="negative"):
+        Operation(target=target, controls=controls)

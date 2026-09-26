@@ -14,3 +14,12 @@ class Operation:
 
     target: int
     controls: tuple[int, ...] = ()
+
+    def __post_init__(self) -> None:
+        wires = (self.target, *self.controls)
+        if min(wires) < 0:
+            raise ValueError(f"Wire indexes cannot be negative: {wires}")
+        if self.target in self.controls:
+            raise ValueError(f"The target wire {self.target} cannot also be a control.")
+        if len(set(self.controls)) != len(self.controls):
+            raise ValueError(f"Control wires must be unique: {self.controls}")
