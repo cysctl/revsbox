@@ -1,7 +1,14 @@
+from pathlib import Path
+
 import pytest
 
-from revsbox.ir import Operation
-from revsbox.parser import ParseError, parse
+from revsbox.ir import Operation, ReversibleCircuit
+from revsbox.parser import ParseError, load, parse
+
+DATA = Path(__file__).parent / "data"
+
+# The PRESENT S-Box lookup table (the same string we give to the tools).
+PRESENT = tuple(int(digit, 16) for digit in "C56B90AD3EF84712")
 
 # Three wires, both CNOT argument orders, one CCNOT, and one NOT.
 SMALL = """\
@@ -134,3 +141,42 @@ def test_parse_rejects_bad_wire_maps(lines, message):
 
     with pytest.raises(ParseError, match=message):
         parse(text)
+
+
+def evaluate(circuit: ReversibleCircuit, value: int) -> int:
+    """Run a circuit on classical bits. X[0] is the most significant bit."""
+    n = circuit.num_wires
+    wires = [0] * n
+    for k, wire in enumerate(circuit.input_map):
+        wires[wire] = (value >> (n - 1 - k)) & 1
+    for op in circuit.operations:
+        if all(wires[control] for control in op.controls):
+            wires[op.target] ^= 1
+    return sum(wires[wire] << (n - 1 - k) for k, wire in enumerate(circuit.output_map))
+
+
+def test_load_reads_the_lighter_r_file():
+    circuit = load(DATA / "present_lighter_r.c")
+
+    assert circuit.num_wires == 4
+    assert circuit.input_map == (1, 0, 2, 3)
+    assert circuit.output_map == (2, 1, 0, 3)
+    assert len(circuit.operations) == 11
+
+
+@pytest.mark.parametrize(
+    "file_name",
+    ["present_lighter_r.c", "present_dorcis_depth.c", "present_dorcis_t_depth.c"],
+)
+def test_real_files_compute_the_present_sbox(file_name):
+    circuit = load(DATA / file_name)
+
+    assert tuple(evaluate(circuit, value) for value in range(16)) == PRESENT
+
+
+def test_load_adds_the_file_name_to_errors(tmp_path):
+    path = tmp_path / "broken.c"
+    path.write_text("hello\n", encoding="utf-8")
+
+    with pytest.raises(ParseError, match="broken.c: Line 1"):
+        load(path)

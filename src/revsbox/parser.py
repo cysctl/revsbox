@@ -1,6 +1,8 @@
 """Parse LIGHTER-R and DORCIS output files into a ReversibleCircuit."""
 
 import re
+from os import PathLike
+from pathlib import Path
 
 from revsbox.ir import Operation, ReversibleCircuit
 
@@ -54,6 +56,15 @@ def parse(text: str) -> ReversibleCircuit:
         )
     except ValueError as error:
         raise ParseError(str(error)) from error
+
+
+def load(path: str | PathLike[str]) -> ReversibleCircuit:
+    """Read and parse a LIGHTER-R or DORCIS output file."""
+    file_path = Path(path)
+    try:
+        return parse(file_path.read_text(encoding="utf-8"))
+    except ParseError as error:
+        raise ParseError(f"{file_path}: {error}") from error
 
 
 def _parse_gate(match: re.Match[str], number: int) -> Operation:
