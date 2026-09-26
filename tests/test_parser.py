@@ -19,6 +19,17 @@ X[1] = F[2];
 X[2] = F[0];
 """
 
+# A valid 3-wire file. The gate line goes on line 4.
+TEMPLATE = """\
+F[0] = X[0];
+F[1] = X[1];
+F[2] = X[2];
+{gate_line}
+X[0] = F[0];
+X[1] = F[1];
+X[2] = F[2];
+"""
+
 
 def test_parse_reads_maps_and_operations():
     circuit = parse(SMALL)
@@ -45,3 +56,21 @@ def test_parse_ignores_comment_lines():
 def test_parse_rejects_unknown_lines():
     with pytest.raises(ParseError, match="Line 2"):
         parse("F[0] = X[0];\nhello world\n")
+
+
+@pytest.mark.parametrize(
+    ("gate_line", "message"),
+    [
+        ("F[0] = FOO1(F[0]);", "unknown gate 'FOO1'"),
+        ("F[0] = CNOT1(F[0], X[1]);", "bad arguments"),
+        ("F[0] = CNOT1(F[0], F[1], F[2]);", "wrong number of arguments"),
+        ("F[0] = RNOT1(F[0], F[1]);", "wrong number of arguments"),
+        ("F[1] = CNOT1(F[1], F[1]);", "repeated wire"),
+        ("F[0] = CNOT1(F[1], F[2]);", "not an argument"),
+    ],
+)
+def test_parse_rejects_bad_gate_lines(gate_line, message):
+    text = TEMPLATE.format(gate_line=gate_line)
+
+    with pytest.raises(ParseError, match=f"^Line 4: .*{message}"):
+        parse(text)
