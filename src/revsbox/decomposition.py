@@ -1,5 +1,7 @@
 """Turn an SBoxGate into a plain Qiskit circuit."""
 
+from collections.abc import Sequence
+
 from qiskit import QuantumCircuit, transpile
 
 from revsbox.gate import SBoxGate
@@ -13,16 +15,33 @@ def to_nct(gate: SBoxGate) -> QuantumCircuit:
     return _as_circuit(gate).decompose("sbox")
 
 
-def to_clifford_t(gate: SBoxGate) -> QuantumCircuit:
-    """Decompose the gate into the gates in CLIFFORD_T_BASIS with Qiskit.
+def decompose_gate(
+    gate: SBoxGate,
+    basis_gates: Sequence[str],
+    *,
+    optimization_level: int = 0,
+) -> QuantumCircuit:
+    """Decompose the gate into the given basis gates with Qiskit.
 
-    Optimization level 0 is used, so the result describes the tool's circuit
-    and not the result of Qiskit's optimizer. Qiskit does not use ancilla
-    qubits for this decomposition.
+    With optimization level 0, the result describes the tool's circuit.
+    Levels 1 to 3 let Qiskit's optimizer change the circuit, so the result is
+    no longer the tool's circuit alone. Qiskit raises an error if the level
+    is not 0 to 3, or if the basis gates cannot express the circuit.
     """
     return transpile(
-        _as_circuit(gate), basis_gates=list(CLIFFORD_T_BASIS), optimization_level=0
+        _as_circuit(gate),
+        basis_gates=list(basis_gates),
+        optimization_level=optimization_level,
     )
+
+
+def to_clifford_t(gate: SBoxGate, optimization_level: int = 0) -> QuantumCircuit:
+    """Decompose the gate into the gates in CLIFFORD_T_BASIS with Qiskit.
+
+    Qiskit does not use ancilla qubits for this decomposition. See
+    decompose_gate for the meaning of optimization_level.
+    """
+    return decompose_gate(gate, CLIFFORD_T_BASIS, optimization_level=optimization_level)
 
 
 def _as_circuit(gate: SBoxGate) -> QuantumCircuit:
