@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 from qiskit.primitives import StatevectorSampler
+from qiskit_aer.primitives import SamplerV2 as AerSamplerV2
 
 from revsbox.gate import SBoxGate
 from revsbox.parser import load
@@ -115,3 +116,10 @@ def test_verify_rejects_a_table_of_the_wrong_length():
 
     with pytest.raises(ValueError, match="needs 16 entries, got 3"):
         verify(gate, (1, 2, 3))
+
+
+@pytest.mark.parametrize("file_name", FILES)
+def test_run_sbox_works_with_aer(file_name):
+    gate = SBoxGate(load(DATA / file_name))
+
+    assert run_sbox(gate, sampler=AerSamplerV2()) == PRESENT
