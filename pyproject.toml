@@ -13,9 +13,18 @@ authors = [{name = "Enes Buzluk"}]
 requires-python = ">=3.10"
 dependencies = ["qiskit>=2.0"]
 
+[project.optional-dependencies]
+draw = ["matplotlib>=3.3", "pylatexenc>=1.4"]
+
 [dependency-groups]
 commit = ["commitizen==4.19.0"]
-test = ["pytest==9.1.1", "qiskit-aer==0.17.2"]
+test = [
+  "matplotlib==3.10.8",
+  "pylatexenc==2.11",
+  "pytest==9.1.1",
+  "qiskit-aer==0.17.2",
+  "qiskit-qasm3-import==0.6.0",
+]
 dev = [
   { include-group = "commit" },
   { include-group = "test" },
