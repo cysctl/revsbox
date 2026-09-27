@@ -19,7 +19,7 @@ draw = ["matplotlib>=3.3", "pylatexenc>=1.4"]
 [dependency-groups]
 commit = ["commitizen==4.19.0"]
 test = [
-  "matplotlib==3.11.2",
+  "matplotlib==3.10.8",
   "pylatexenc==2.11",
   "pytest==9.1.1",
   "qiskit-aer==0.17.2",
