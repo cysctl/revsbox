@@ -1,11 +1,12 @@
 from pathlib import Path
 
 import pytest
+from matplotlib import pyplot
 from qiskit import QuantumCircuit, qasm3
 from qiskit.quantum_info import Operator
 
 from revsbox.decomposition import to_clifford_t, to_nct
-from revsbox.export import to_qasm, write_qasm
+from revsbox.export import to_qasm, write_png, write_qasm
 from revsbox.gate import SBoxGate
 from revsbox.parser import load
 
@@ -77,3 +78,22 @@ def test_write_qasm_writes_the_same_text(tmp_path):
     write_qasm(circuit, path, layout=gate.ir)
 
     assert path.read_text(encoding="utf-8") == to_qasm(circuit, layout=gate.ir)
+
+
+def test_write_png_writes_a_png_file(tmp_path):
+    gate = SBoxGate(load(DATA / "present_lighter_r.c"))
+    path = tmp_path / "present.png"
+
+    write_png(to_nct(gate), path)
+
+    # Every PNG file starts with these 8 bytes.
+    assert path.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_write_png_closes_its_figure(tmp_path):
+    gate = SBoxGate(load(DATA / "present_lighter_r.c"))
+    open_before = len(pyplot.get_fignums())
+
+    write_png(to_nct(gate), tmp_path / "present.png")
+
+    assert len(pyplot.get_fignums()) == open_before

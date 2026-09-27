@@ -2,10 +2,14 @@
 
 from os import PathLike
 from pathlib import Path
+from typing import TYPE_CHECKING, cast
 
 from qiskit import QuantumCircuit, qasm3
 
 from revsbox.ir import ReversibleCircuit
+
+if TYPE_CHECKING:
+    from matplotlib.figure import Figure
 
 
 def to_qasm(circuit: QuantumCircuit, *, layout: ReversibleCircuit | None = None) -> str:
@@ -54,3 +58,23 @@ def _layout_comment(layout: ReversibleCircuit) -> str:
         "",
     ]
     return "\n".join(lines) + "\n"
+
+
+def write_png(circuit: QuantumCircuit, path: str | PathLike[str]) -> None:
+    """Draw the circuit with Qiskit's matplotlin drawer and save it as PNG file.
+
+    This needs matplotlib and pylatexenc. Install them with
+    pip install revsbox[draw]
+    """
+    try:
+        from matplotlib import pyplot
+    except ImportError as error:
+        raise ImportError(
+            'write_png needs matplotlin. Install it with: pip install "revsbox[draw]"'
+        ) from error
+
+    figure = cast("Figure", circuit.draw("mpl"))
+    figure.savefig(path, format="png")
+    # matplotlib keeps every figure in memory until it is closed. Without this,
+    # writing many drawings in a loop would use more and more memory.
+    pyplot.close(figure)
