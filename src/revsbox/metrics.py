@@ -94,6 +94,9 @@ def nct_metrics(gate: SBoxGate) -> Metrics:
     return circuit_metrics(to_nct(gate))
 
 
-def clifford_t_metrics(gate: SBoxGate) -> Metrics:
-    """Measure the circuit after it is decomposed into Clifford+T gates."""
-    return circuit_metrics(to_clifford_t(gate))
+def clifford_t_metrics(gate: SBoxGate, *, optimization_level: int = 0) -> Metrics:
+    """Measure the circuit after it is decomposed into Clifford+T gates.
+
+    See decompose_gate for the meaning of optimization_level.
+    """
+    return circuit_metrics(to_clifford_t(gate, optimization_level=optimization_level))

@@ -5,7 +5,7 @@ from typing import cast
 import pytest
 from qiskit import QuantumCircuit
 
-from revsbox.decomposition import CLIFFORD_T_BASIS
+from revsbox.decomposition import CLIFFORD_T_BASIS, to_clifford_t
 from revsbox.gate import SBoxGate
 from revsbox.ir import ReversibleCircuit
 from revsbox.metrics import (
@@ -137,3 +137,13 @@ def test_clifford_t_metrics_use_only_the_basis(file_name):
     assert metrics.t_count == 7 * toffolis
     assert metrics.t_depth is not None
     assert 0 < metrics.t_depth <= 7 * toffolis
+
+
+@pytest.mark.parametrize("level", [0, 1, 2, 3])
+def test_clifford_t_metrics_use_the_optimization_level(level):
+    gate = SBoxGate(load(DATA / "present_lighter_r.c"))
+    expected = circuit_metrics(to_clifford_t(gate, optimization_level=level))
+
+    metrics = clifford_t_metrics(gate, optimization_level=level)
+
+    assert metrics == expected
