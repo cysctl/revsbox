@@ -15,7 +15,7 @@ dependencies = ["qiskit>=2.0"]
 
 [dependency-groups]
 commit = ["commitizen==4.19.0"]
-test = ["pytest==9.1.1"]
+test = ["pytest==9.1.1", "qiskit-aer==0.17.2"]
 dev = [
   { include-group = "commit" },
   { include-group = "test" },
