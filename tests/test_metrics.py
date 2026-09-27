@@ -4,16 +4,14 @@ from typing import cast
 
 import pytest
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import Operator
 
+from revsbox.decomposition import CLIFFORD_T_BASIS
 from revsbox.gate import SBoxGate
 from revsbox.ir import ReversibleCircuit
 from revsbox.metrics import (
-    CLIFFORD_T_BASIS,
     circuit_metrics,
     clifford_t_metrics,
     nct_metrics,
-    to_clifford_t,
 )
 from revsbox.parser import load
 
@@ -139,14 +137,3 @@ def test_clifford_t_metrics_use_only_the_basis(file_name):
     assert metrics.t_count == 7 * toffolis
     assert metrics.t_depth is not None
     assert 0 < metrics.t_depth <= 7 * toffolis
-
-
-@pytest.mark.parametrize("file_name", FILES)
-def test_to_clifford_t_keeps_the_same_unitary(file_name):
-    gate = SBoxGate(load(DATA / file_name))
-    original = QuantumCircuit(gate.num_qubits)
-    original.append(gate, range(gate.num_qubits))
-
-    decomposed = to_clifford_t(gate)
-
-    assert Operator(decomposed).equiv(Operator(original))
