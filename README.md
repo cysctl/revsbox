@@ -1,7 +1,7 @@
 # revsbox
 
 [![CI](https://github.com/cysctl/revsbox/actions/workflows/ci.yml/badge.svg)](https://github.com/cysctl/revsbox/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-0.0.0-blue)](https://github.com/cysctl/revsbox/releases)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/cysctl/revsbox/releases)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org)
 [![Qiskit](https://img.shields.io/badge/Qiskit-2.0%2B-6929C4)](https://qiskit.org)
 [![License](https://img.shields.io/github/license/cysctl/revsbox)](LICENSE)
