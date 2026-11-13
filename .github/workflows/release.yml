@@ -36,13 +36,13 @@ jobs:
             echo "should_release=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Extract release notes
-        if: steps.check.outputs.should_release == 'true'
-        run: cz changelog --unreleased-version "${{ steps.check.outputs.tag }}" --dry-run > RELEASE_NOTES.md
-
       - name: Build package
         if: steps.check.outputs.should_release == 'true'
         run: python -m build
+
+      - name: Extract release notes
+        if: steps.check.outputs.should_release == 'true'
+        run: cz changelog --unreleased-version "${{ steps.check.outputs.tag }}" --dry-run > "$RUNNER_TEMP/RELEASE_NOTES.md"
 
       - name: Create GitHub Release
         if: steps.check.outputs.should_release == 'true'
@@ -52,4 +52,4 @@ jobs:
           gh release create "${{ steps.check.outputs.tag }}" dist/* \
             --target "${{ github.sha }}" \
             --title "${{ steps.check.outputs.tag }}" \
-            --notes-file RELEASE_NOTES.md
+            --notes-file "$RUNNER_TEMP/RELEASE_NOTES.md"
