@@ -38,7 +38,7 @@ jobs:
 
       - name: Extract release notes
         if: steps.check.outputs.should_release == 'true'
-        run: cz changelog "${{ steps.check.outputs.version }}" --dry-run > RELEASE_NOTES.md
+        run: cz changelog --unreleased-version "${{ steps.check.outputs.tag }}" --dry-run > RELEASE_NOTES.md
 
       - name: Build package
         if: steps.check.outputs.should_release == 'true'
